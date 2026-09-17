@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘의 운세</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      background: linear-gradient(135deg, #f7f1ff, #eef7ff);
+      color: #252336;
+      min-height: 100vh;
+    }
+    .container { width: min(920px, 92%); margin: 0 auto; padding: 42px 0 60px; }
+    header { text-align: center; margin-bottom: 28px; }
+    .badge {
+      display: inline-block; padding: 7px 13px; border-radius: 999px;
+      background: #fff; box-shadow: 0 6px 20px rgba(60,45,100,.08);
+      font-size: 13px; color: #7356c8; font-weight: 700;
+    }
+    h1 { margin: 14px 0 8px; font-size: clamp(32px, 6vw, 54px); }
+    .subtitle { margin: 0; color: #777184; }
+    .card {
+      background: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.8);
+      border-radius: 24px; padding: 24px; margin-top: 22px;
+      box-shadow: 0 18px 50px rgba(55,43,90,.10);
+      backdrop-filter: blur(10px);
+    }
+    .controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 7px; color: #5e576b; }
+    select, input, button {
+      width: 100%; height: 48px; border-radius: 13px; border: 1px solid #e2ddea;
+      padding: 0 14px; font-size: 15px; background: #fff; color: #252336;
+    }
+    button {
+      width: auto; min-width: 130px; border: 0; cursor: pointer; font-weight: 800;
+      background: #7356c8; color: white; box-shadow: 0 8px 18px rgba(115,86,200,.25);
+    }
+    button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    .result { display: none; }
+    .result.show { display: block; animation: rise .35s ease; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .date { text-align: center; color: #817a8e; font-size: 14px; margin-bottom: 8px; }
+    .sign-title { text-align: center; margin: 0; font-size: 30px; }
+    .score { text-align: center; margin: 8px 0 24px; color: #7356c8; font-weight: 800; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .fortune {
+      border-radius: 18px; padding: 18px; background: #faf9ff; border: 1px solid #eeeaf7;
+    }
+    .fortune h3 { margin: 0 0 9px; font-size: 16px; }
+    .fortune p { margin: 0; line-height: 1.65; color: #625d6c; font-size: 14px; }
+    .lucky { margin-top: 14px; padding: 17px; border-radius: 18px; background: #fff8df; border: 1px solid #f3e4a7; }
+    .lucky strong { color: #795f12; }
+    .notice { margin-top: 18px; text-align: center; color: #8a8492; font-size: 12px; line-height: 1.6; }
+    @media (max-width: 680px) {
+      .controls { grid-template-columns: 1fr; }
+      button { width: 100%; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <span class="badge">✨ DAILY FORTUNE</span>
+      <h1>오늘의 운세</h1>
+      <p class="subtitle">별자리와 생년월일을 바탕으로 오늘의 메시지를 확인해 보세요.</p>
+    </header>
+
+    <section class="card">
+      <div class="controls">
+        <div>
+          <label for="zodiac">별자리</label>
+          <select id="zodiac">
+            <option value="양자리">♈ 양자리</option>
+            <option value="황소자리">♉ 황소자리</option>
+            <option value="쌍둥이자리">♊ 쌍둥이자리</option>
+            <option value="게자리">♋ 게자리</option>
+            <option value="사자자리">♌ 사자자리</option>
+            <option value="처녀자리">♍ 처녀자리</option>
+            <option value="천칭자리">♎ 천칭자리</option>
+            <option value="전갈자리">♏ 전갈자리</option>
+            <option value="사수자리">♐ 사수자리</option>
+            <option value="염소자리">♑ 염소자리</option>
+            <option value="물병자리">♒ 물병자리</option>
+            <option value="물고기자리">♓ 물고기자리</option>
+          </select>
+        </div>
+        <div>
+          <label for="birth">생년월일</label>
+          <input id="birth" type="date" />
+        </div>
+        <button id="fortuneBtn">운세 보기</button>
+      </div>
+      <p class="notice">운세는 재미와 자기성찰을 위한 콘텐츠입니다. 중요한 결정은 충분한 정보와 현실적인 판단을 바탕으로 해주세요.</p>
+    </section>
+
+    <section id="result" class="card result">
+      <div id="today" class="date"></div>
+      <h2 id="signTitle" class="sign-title"></h2>
+      <div id="score" class="score"></div>
+      <div class="grid">
+        <article class="fortune"><h3>💫 종합운</h3><p id="overall"></p></article>
+        <article class="fortune"><h3>📚 학업·일</h3><p id="work"></p></article>
+        <article class="fortune"><h3>🤝 인간관계</h3><p id="relationship"></p></article>
+        <article class="fortune"><h3>💰 금전운</h3><p id="money"></p></article>
+      </div>
+      <div class="lucky">
+        <strong>🍀 오늘의 행운</strong>
+        <span id="lucky"></span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const messages = [
+      {
+        overall: "작은 기회가 눈에 띄는 날입니다. 서두르기보다 주변의 신호를 차분히 살펴보면 좋은 흐름을 잡을 수 있어요.",
+        work: "한 번에 많은 일을 하기보다 가장 중요한 한 가지를 먼저 끝내는 것이 효과적입니다.",
+        relationship: "상대의 말을 끝까지 들어주는 태도가 좋은 분위기를 만듭니다. 먼저 가볍게 말을 걸어보세요.",
+        money: "충동적인 선택보다 필요한 것과 원하는 것을 구분해 보는 것이 좋습니다."
+      },
+      {
+        overall: "평소보다 집중력이 잘 살아나는 날입니다. 미뤄두었던 일을 조금씩 시작하면 생각보다 빠르게 진전될 수 있어요.",
+        work: "새로운 아이디어를 메모해 두세요. 나중에 유용한 결과물로 발전할 가능성이 있습니다.",
+        relationship: "솔직하지만 부드러운 표현이 관계에 도움이 됩니다. 고마운 사람에게 마음을 표현해 보세요.",
+        money: "절약보다 계획적인 사용이 중요한 날입니다. 작은 지출을 기록해 보면 흐름이 보입니다."
+      },
+      {
+        overall: "속도를 조절하는 것이 행운을 부르는 날입니다. 잠깐의 여유가 오히려 더 좋은 판단으로 이어집니다.",
+        work: "실수를 줄이려면 마지막에 한 번 더 확인하는 습관이 도움이 됩니다.",
+        relationship: "가벼운 대화에서 좋은 인연이나 새로운 정보를 얻을 수 있습니다.",
+        money: "오늘은 큰 결정보다 현재 가진 것을 잘 관리하는 데 집중해 보세요."
+      },
+      {
+        overall: "새로운 관점을 받아들이면 일이 술술 풀리는 날입니다. 익숙한 방법만 고집하지 않아도 좋아요.",
+        work: "친구나 동료와 아이디어를 나누면 혼자 생각할 때보다 좋은 답을 찾을 수 있습니다.",
+        relationship: "작은 배려가 크게 돌아오는 날입니다. 먼저 양보하거나 칭찬해 보세요.",
+        money: "가격만 보지 말고 실제로 필요한지 생각하면 현명한 선택을 할 수 있습니다."
+      }
+    ];
+
+    const luckyItems = [
+      ["행운의 색", "라벤더", "행운의 숫자", "7"],
+      ["행운의 색", "하늘색", "행운의 숫자", "3"],
+      ["행운의 색", "연두색", "행운의 숫자", "8"],
+      ["행운의 색", "아이보리", "행운의 숫자", "4"]
+    ];
+
+    function hashString(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return Math.abs(h);
+    }
+
+    function showFortune() {
+      const zodiac = document.getElementById("zodiac").value;
+      const birth = document.getElementById("birth").value || "no-date";
+      const now = new Date();
+      const dateKey = now.getFullYear() + "-" + (now.getMonth()+1) + "-" + now.getDate();
+      const seed = hashString(zodiac + birth + dateKey);
+      const msg = messages[seed % messages.length];
+      const lucky = luckyItems[(seed >> 3) % luckyItems.length];
+
+      document.getElementById("today").textContent =
+        now.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
+      document.getElementById("signTitle").textContent = zodiac + "의 오늘 운세";
+      document.getElementById("score").textContent = "오늘의 운세 점수  " + (72 + seed % 27) + "점";
+      document.getElementById("overall").textContent = msg.overall;
+      document.getElementById("work").textContent = msg.work;
+      document.getElementById("relationship").textContent = msg.relationship;
+      document.getElementById("money").textContent = msg.money;
+      document.getElementById("lucky").textContent =
+        "  " + lucky[0] + ": " + lucky[1] + "  ·  " + lucky[2] + ": " + lucky[3];
+
+      document.getElementById("result").classList.add("show");
+      document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.getElementById("fortuneBtn").addEventListener("click", showFortune);
+    document.getElementById("birth").valueAsDate = new Date(2005, 0, 1);
+  </script>
+</body>
+</html>
